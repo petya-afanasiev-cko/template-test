@@ -1,3 +1,3 @@
-# template-test
+# {Scheme} loader readme
 
 Some text here
