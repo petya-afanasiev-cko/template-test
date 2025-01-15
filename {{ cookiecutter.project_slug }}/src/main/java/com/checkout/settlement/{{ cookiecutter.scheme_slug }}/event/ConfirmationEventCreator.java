@@ -46,7 +46,7 @@ public class ConfirmationEventCreator implements ItemProcessor<RecordContext<Con
         .setOriginalFileName(charge.fileName())
         .setOriginalFileLineNumber(String.valueOf(charge.lineNumber()))
         .setPrimaryKey(String.join("-", charge.referenceNumber(), charge.networkReferenceId()))
-        .setScheme(Scheme.{{ cookiecutter.scheme_slug }})
+        .setScheme(Scheme.{{ cookiecutter.scheme }})
         .setSettlementCountry("")
         .setSettlement(Settlement.newBuilder()
             .setSettlementType(SettlementType.PRESENTMENT_SETTLED)
