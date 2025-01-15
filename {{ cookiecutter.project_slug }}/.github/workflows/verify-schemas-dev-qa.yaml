@@ -16,7 +16,7 @@ jobs:
     name: Verify Shared Schemas [All Envs]
     uses: cko-data-platform/cdp-cicd-lib/.github/workflows/schema_reg.yaml@main
     with:
-      runner-name: ${{ github.repository_owner }}-default-runners-github-runners
+      runner-name: {% raw %}${{ github.repository_owner }}-default-runners-github-runners{% endraw %}
       # Where have you put your schemas
       protobuf-path: src/main/schemas/proto
       # Point to your subjects file

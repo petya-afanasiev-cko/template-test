@@ -23,10 +23,10 @@ jobs:
         with:
           TEAM: "Scheme Settlements"
           SCAN_PATH: "./iac"
-          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID  }}
-          WIZ_CLIENT_SECRET: ${{  secrets.WIZ_CLIENT_SECRET  }}
+          WIZ_CLIENT_ID: {% raw %}${{ secrets.WIZ_CLIENT_ID  }}{% endraw %}
+          WIZ_CLIENT_SECRET: {% raw %}${{  secrets.WIZ_CLIENT_SECRET  }}{% endraw %}
           WIZ_PR_COMMENT: true
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
           ENABLE_SCAN_ALERT: true
 
   scan-Dockerfile:
@@ -38,8 +38,8 @@ jobs:
         with:
           TEAM: "Scheme Settlements"
           SCAN_PATH: "./Dockerfile"
-          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID  }}
-          WIZ_CLIENT_SECRET: ${{  secrets.WIZ_CLIENT_SECRET  }}
+          WIZ_CLIENT_ID: {% raw %}${{ secrets.WIZ_CLIENT_ID  }}{% endraw %}
+          WIZ_CLIENT_SECRET: {% raw %}${{  secrets.WIZ_CLIENT_SECRET  }}{% endraw %}
           WIZ_PR_COMMENT: true
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
           ENABLE_SCAN_ALERT: true
