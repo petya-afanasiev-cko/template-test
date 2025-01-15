@@ -1,0 +1,9 @@
+{
+  "ui": "mocha-cakes-2",
+  "require": "main.js",
+  "recursive": true,
+  "exit": true,
+  "reporter": "mochawesome",
+  "timeout": 120000,
+  "reporter-options": "reportDir=../../build/artifacts"
+}

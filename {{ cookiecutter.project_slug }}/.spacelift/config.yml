@@ -1,0 +1,15 @@
+version: "1"
+
+module_version: 0.0.4
+
+# see https://docs.spacelift.io/concepts/configuration for details on precedence
+
+stack_defaults:
+  before_init:
+    # your usual before init scripts
+    - git config --global --add safe.directory /mnt/workspace/source # required by spacelift so we can run git commands
+    - git config --global credential.helper 'store --file ${PWD}/.credentials' # make credentials available so we can run commands against github
+    - echo "https://${GIT_USER}:${GIT_TOKEN}@github.com" > ${PWD}/.credentials
+    - git remote set-url origin "https://${GIT_USER}:${GIT_TOKEN}@github.com/$TF_VAR_spacelift_repository.git"
+  environment:
+    AWS_REGION: eu-west-1

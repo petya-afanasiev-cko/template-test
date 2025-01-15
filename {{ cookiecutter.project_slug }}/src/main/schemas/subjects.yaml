@@ -1,0 +1,12 @@
+subjects:
+  - name: cko.card_processing_settlement_dci.Charge
+    proto: cko.card_processing_settlement_dci.proto
+    ref:
+      - name: cko.proto
+        version: -1
+
+  - name: cko.card_processing_settlement_dci.proto
+    proto: cko.card_processing_settlement_dci.proto
+    ref:
+      - name: cko.proto
+        version: -1

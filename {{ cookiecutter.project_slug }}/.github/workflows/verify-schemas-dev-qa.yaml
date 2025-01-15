@@ -1,0 +1,28 @@
+name: Verify [All Envs] [DEV & QA]
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [ main, master ]
+    # Only run if the schema's or subjects have changed.
+    paths:
+      - 'src/main/schemas/proto/**'
+      - 'src/main/schemas/subjects.yaml'
+      - '.github/workflows/upload-schemas.yaml'
+
+jobs:
+# Verify schema changes across all environments
+  VerifySchemas:
+    name: Verify Shared Schemas [All Envs]
+    uses: cko-data-platform/cdp-cicd-lib/.github/workflows/schema_reg.yaml@main
+    with:
+      runner-name: ${{ github.repository_owner }}-default-runners-github-runners
+      # Where have you put your schemas
+      protobuf-path: src/main/schemas/proto
+      # Point to your subjects file
+      subjects: src/main/schemas/subjects.yaml
+      # What environments do we want to target in this particular instance. We'll treat them as a unit.
+      environments: dev qa sbox prod
+      # just run a test, or not?
+      dry-run: true
+    secrets: inherit

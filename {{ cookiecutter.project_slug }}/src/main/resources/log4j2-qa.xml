@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+  <Appenders>
+    <Console name="Console" target="SYSTEM_OUT">
+      <JSONLayout compact="true" eventEol="true" properties="true" stacktraceAsString="true">
+        <KeyValuePair key="service" value="${env:name}"/>
+        <KeyValuePair key="ddtags" value="${env:DD_TAGS}"/>
+        <KeyValuePair key="version" value="${env:APP_VERSION}"/>
+      </JSONLayout>
+    </Console>
+  </Appenders>
+
+  <Loggers>
+    <!-- LOG everything at INFO level -->
+    <Logger level="info" name="com.checkout.settlement"/>
+    <Root level="info">
+      <AppenderRef ref="Console"/>
+    </Root>
+  </Loggers>
+
+</Configuration>

@@ -1,0 +1,33 @@
+{
+  "name": "dci-settlement",
+  "description": "Acceptance tests for the DCI Settlement",
+  "version": "2.0.0",
+  "author": "Scheme Ingestion <gateway-team@checkout.com>",
+  "repository": "https://github.com/cko-fort/dci-settlement",
+  "private": true,
+  "scripts": {
+    "test": "mocha"
+  },
+  "devDependencies": {
+    "chai": "^5.1.2",
+    "chai-as-promised": "^8.0.1",
+    "cli-table": "^0.3.11",
+    "creditcard-generator": "^0.0.7",
+    "glob": "^11.0.0",
+    "js-sha256": "^0.11.0",
+    "mocha": "^11.0.1",
+    "mocha-cakes-2": "3.3.0",
+    "mochawesome": "^7.1.3",
+    "protobufjs": "~7.4.0",
+    "superagent-protobuf": "^0.1.1",
+    "supertest": "^7.0.0",
+    "uuid": "11.0.4"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.635.0",
+    "@kafkajs/confluent-schema-registry": "^3.4.1",
+    "js-md5": "^0.8.3",
+    "kafkajs": "^2.2.4",
+    "superagent": "^10.1.1"
+  }
+}

@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/.github/"
+    groups:
+      github-actions-dependencies:
+        patterns:
+          - "*"
+    schedule:
+      interval: monthly
+    reviewers:
+      - "cko-fort/scheme-settlements"
+    labels:
+      - "github-actions"
+      - "dependencies"
+
+  - package-ecosystem: gradle
+    schedule:
+      interval: monthly
+    directory: /
+    groups:
+      java-dependencies:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "cko-fort/scheme-settlements"
+    labels:
+      - "dependencies"
+      - "java"

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: dci-settlement
+  profiles: ##profiles gets overwritten by ECS IAC.
+    active: localdev
+  batch:
+    job:
+      enabled: false
+  threads:
+    virtual:
+      enabled: true
+
+logging:
+  log4j2:
+    isThreadContextMapInheritable: true
+  level:
+    com.checkout: DEBUG
+    org.springframework.integration: WARN
+
+log4j2:
+  isThreadContextMapInheritable: true
+
+server:
+  port: 8080

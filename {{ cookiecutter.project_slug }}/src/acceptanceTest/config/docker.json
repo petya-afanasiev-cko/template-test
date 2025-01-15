@@ -1,0 +1,9 @@
+{
+  "awsUrl": "http://localstack:4566/",
+  "s3Bucket": "scheme-settlements-default",
+  "s3BucketDir": "dci/incoming/",
+  "kafkaBrokerUrl": "kafka:9092",
+  "schemaRegistryUrl": "http://schema-registry:8085",
+  "kafkaTopic": "settlement-events",
+  "confirmationFile": "./files/Confirmation_ACQ.fwf"
+}

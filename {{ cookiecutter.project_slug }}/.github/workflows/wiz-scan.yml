@@ -1,0 +1,45 @@
+name: "Wiz Scan"
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'iac/**'
+      - 'Dockerfile'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'iac/**'
+      - 'Dockerfile'
+
+jobs:
+  scan:
+    name: Scan IaC with Wiz
+    runs-on: [ self-hosted, cko-fort-default-runners-github-runners ]
+    steps:
+      - name: scan-iac
+        uses: cko-core-engineering/actions/iac-scanning@v5
+        with:
+          TEAM: "Scheme Settlements"
+          SCAN_PATH: "./iac"
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID  }}
+          WIZ_CLIENT_SECRET: ${{  secrets.WIZ_CLIENT_SECRET  }}
+          WIZ_PR_COMMENT: true
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENABLE_SCAN_ALERT: true
+
+  scan-Dockerfile:
+    name: Scan Dockerfile with Wiz
+    runs-on: [ self-hosted, cko-fort-default-runners-github-runners ]
+    steps:
+      - name: scan-Dockerfile
+        uses: cko-core-engineering/actions/iac-scanning@main
+        with:
+          TEAM: "Scheme Settlements"
+          SCAN_PATH: "./Dockerfile"
+          WIZ_CLIENT_ID: ${{ secrets.WIZ_CLIENT_ID  }}
+          WIZ_CLIENT_SECRET: ${{  secrets.WIZ_CLIENT_SECRET  }}
+          WIZ_PR_COMMENT: true
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ENABLE_SCAN_ALERT: true

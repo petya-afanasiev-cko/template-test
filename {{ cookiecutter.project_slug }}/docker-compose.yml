@@ -1,0 +1,98 @@
+name: dci-settlement
+services:
+  localstack:
+    container_name: localstack
+    build:
+      context: ./docker
+      dockerfile: ./localstack/Dockerfile
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=secretsmanager,sqs,s3,cloudwatch,iam
+      - AWS_DEFAULT_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=XXX
+      - AWS_SECRET_ACCESS_KEY=XXX
+      - AWS_SECRET_KEY=XXX
+      - KINESIS_ERROR_PROBABILITY=0
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+    networks:
+      - dci-settlement-network
+    volumes:
+      - localstack_data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+
+#  Once terraformized
+#  tf-setup:
+#    container_name: tf-setup
+#    build:
+#      context: ./docker
+#      dockerfile: ./terraform/Dockerfile
+#    networks:
+#      - dci-settlement-network
+#    depends_on:
+#      - localstack
+
+  kafka:
+    container_name: kafka
+    image: confluentinc/confluent-local:7.8.0
+    networks:
+      - dci-settlement-network
+    ports:
+      - "9092:9092"
+      - "9091:9091"
+      - "8081:8081"
+      - "8082:8082"
+    environment:
+      CLUSTER_ID: "q1Sh-9_ISia_zwGINzRvyQ"
+      KAFKA_LISTENERS: "PLAINTEXT://localhost:29092,CONTROLLER://localhost:29093,PLAINTEXT_HOST://0.0.0.0:9092,PLAINTEXT_LOCAL://0.0.0.0:9091"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:29092,PLAINTEXT_HOST://kafka:9092,PLAINTEXT_LOCAL://localhost:9091"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_LOCAL:PLAINTEXT"
+      KAFKA_TOPIC_CREATION_ENABLE: "true"
+    volumes:
+      - ./docker/kafka:/scripts
+    command: [ "/scripts/entrypoint.sh" ]
+    healthcheck:
+      test: kafka-topics --bootstrap-server kafka:9092 --list
+      start_period: 15s
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.8.0
+    ports:
+      - 8085:8085
+    networks:
+      - dci-settlement-network
+    depends_on:
+      - kafka
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8085,http://localhost:8085
+      SCHEMA_REGISTRY_SCHEMA_REGISTRY_INTER_INSTANCE_PROTOCOL: "http"
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: INFO
+      SCHEMA_REGISTRY_KAFKASTORE_TOPIC: _schemas
+      
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    networks:
+      - dci-settlement-network
+    depends_on:
+      - kafka
+      - schema-registry
+    ports:
+      - "8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8085
+networks:
+  dci-settlement-network:
+    name: dci-settlement-network
+
+volumes:
+  localstack_data: { }

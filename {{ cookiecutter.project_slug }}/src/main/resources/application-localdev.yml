@@ -1,0 +1,2 @@
+localstack:
+  endpoint: 'http://${LOCALSTACK_AWS_ENDPOINT:localhost}:4566'

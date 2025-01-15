@@ -1,0 +1,26 @@
+name: Upload Schemas [DEV & QA]
+
+on:
+  push:
+    branches: [ main ]
+    # Only run if the schema's or subjects have changed when merging.
+    paths:
+      - 'src/main/schemas/proto/**'
+      - 'src/main/schemas/subjects.yaml'
+      - '.github/workflows/upload-schemas*.yaml'
+
+jobs:
+  VerifyAndDeploySchemas:
+    name: Verify and Deploy Shared Schemas to DEV
+    uses: cko-data-platform/cdp-cicd-lib/.github/workflows/schema_reg.yaml@main
+    with:
+      runner-name: ${{ github.repository_owner }}-default-runners-github-runners
+      # Where have you put your schemas
+      protobuf-path: src/main/schemas/proto
+      # Point to your subjects file
+      subjects: src/main/schemas/subjects.yaml
+      # What environments do we want to target in this particular instance. We'll treat them as a unit.
+      environments: dev qa
+      # just run a test, or not?
+      dry-run: false
+    secrets: inherit

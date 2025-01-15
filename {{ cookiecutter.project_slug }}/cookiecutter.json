@@ -1,0 +1,6 @@
+{
+  "scheme": "Visa",
+  "scheme-slug": "{{ cookiecutter.scheme.lower() }}",
+  "project_name": "SDP {{ cookiecutter.scheme }} Loader",
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}"
+}

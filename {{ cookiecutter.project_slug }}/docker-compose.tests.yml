@@ -1,0 +1,22 @@
+services:
+  dci-acceptance-tests:
+    build:
+      context: ./src/acceptanceTest
+      dockerfile: ./Dockerfile
+    container_name: dci-acceptance-tests
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      - ENV=docker
+      - AWS_REGION=eu-west-1
+      - AWS_ACCESS_KEY_ID=xxx
+      - AWS_SECRET_ACCESS_KEY=xxx
+    networks:
+      - dci-settlement-network
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  dci-settlement-network:
+    name: dci-settlement-network
