@@ -1,7 +1,7 @@
 {
   "awsUrl": "http://localhost:4566/",
   "s3Bucket": "scheme-settlements-default",
-  "s3BucketDir": "dci/incoming/",
+  "s3BucketDir": "{{ cookiecutter.scheme_slug }}/incoming/",
   "kafkaBrokerUrl": "localhost:9091",
   "schemaRegistryUrl": "http://localhost:8085",
   "kafkaTopic": "settlement-events",

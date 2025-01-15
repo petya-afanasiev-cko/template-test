@@ -1,0 +1,58 @@
+syntax = "proto3";
+package cko.card_processing_settlement_{{ cookiecutter.scheme_slug }};
+
+// needs to be download first as a before build task: curl -o cko.proto https://schemas.cko-dev.ckotech.co/subjects/cko.cko.proto/versions/-1/schema
+import "cko.proto";
+
+message Charge {
+  string record_type = 1 [(cko.doc) = "Constant value 06."];
+  string sequence_number = 2 [(cko.doc) = "The sequence of the charge within the batch. Right-justified and padded with leading zeros."];
+  string card_number = 3 [(cko.pci) = true, (cko.pii) = true, (cko.doc) = "Card number left justified and padded with trailing spaces."];
+  string charge_date = 4 [(cko.doc) = "The date the charge was captured by the Acquirer. Format: YYYYMMDD YYYY Year (2011-9999) MM Month (01-12) DD Day (01-31)."];
+  string charge_type = 5 [(cko.doc) = "The type of spend associated with this charge."];
+  string type_of_charge = 6 [(cko.doc) = "Indicates direction of fund movement (debit or credit) and the method of acquisition."];
+  string reference_number = 7 [(cko.doc) = "A unique reference number assigned by the Acquirer. Right-justified and padded with leading spaces."];
+  string authorization_number = 8 [(cko.doc) = "A random number assigned by the authorizing processor."];
+  string program_transaction_rate = 9 [(cko.doc) = "The PTA rate used to price the transaction. Format: Precision 5, Scale 3."];
+  string interchange_ptf_in_usd = 10 [(cko.doc) = "The interchange transaction fee applied to the charge. This will be denominated in US$. Format: Precision 5, Scale 3. If a PTF is not applicable for this charge the field will contain: 00.000."];
+  string gross_charge_amount = 11 [(cko.doc) = "Charge amount in the transaction currency of the charge. Format: Precision 15, Scale 2."];
+  string net_charge_amount = 12 [(cko.doc) = "The priced net amount in the transaction currency of the charge. Format: Precision 19, Scale 6."];
+  string alternate_currency_gross_amount = 13 [(cko.doc) = "The alternate gross amount. Format: Precision 19, Scale 6. If no alternate currency has been specified in the recap this field will be space filled."];
+  string alternate_currency_net_amount = 14 [(cko.doc) = "The priced alternate net amount. Format: Precision 19, Scale 6. If no alternate currency has been specified in the recap this field will be space filled."];
+  string interchange_commission_in_transaction_currency = 15 [(cko.doc) = "The interchange commission in the transaction currency of the charge. Format: Precision 19, Scale 6."];
+  string interchange_commission_in_alternate_currency = 16 [(cko.doc) = "The interchange commission in the alternate currency of the recap. Format: Precision 19, Scale 6. If no alternate currency has been specified in the recap this field will be space filled."];
+  string gross_settlement_amount = 17 [(cko.doc) = "The gross settlement amount denominated in the settlement currency of the Acquirer. Format: Precision 19, Scale 6."];
+  string net_settlement_amount = 18 [(cko.doc) = "The net settlement amount denominated in the settlement currency of the Acquirer. Format: Precision 19, Scale 6."];
+  string interchange_commission_settlement_amount = 19 [(cko.doc) = "The commission settlement amount denominated in the settlement currency of the Acquirer. Format: Precision 19, Scale 6."];
+  string gross_settlement_amount_in_usd = 20 [(cko.doc) = "The US$ equivalent of the Gross Settlement Amount Format: Precision 19, Scale 6."];
+  string net_settlement_amount_in_usd = 21 [(cko.doc) = "The US$ equivalent of the Net Settlement Amount Format: Precision 19, Scale 6."];
+  string interchange_commission_in_usd = 22 [(cko.doc) = "The US$ equivalent of the Interchange Commission in Settlement Currency Format: Precision 19, Scale 6."];
+  string interchange_ptf_in_settlement_currency = 23 [(cko.doc) = "The PTF amount denominated in the settlement currency of the recap Format: Precision 19, Scale 6."];
+  string pricing_rule_name = 24 [(cko.doc) = "The name of the pricing rule assigned by {{ cookiecutter.scheme_slug }}. Pricing Rules, if any will have been agreed with participants as part of contractual arrangements with {{ cookiecutter.scheme_slug }}. Format Right aligned with leading spaces."];
+  string pricing_rule_code = 25 [(cko.doc) = "The code of the pricing rule assigned by {{ cookiecutter.scheme_slug }}."];
+  string pricing_rule_serial_number = 26 [(cko.doc) = "The unique rule serial number assigned by the Interchange Pricing system."];
+  string settlement_date = 27 [(cko.doc) = "Date Settlement Occurred Format: YYYYMMDD YYYY Year (2011-9999) MM Month (01-12) DD Day (01-31)."];
+  string eci = 28 [(cko.doc) = "Used to indicate the security characteristics of an e-Commerce transaction (as submitted in Electronic Interchange field ECI). Space-filled if ProtectBuy product value not present."];
+  string cavv = 29 [(cko.doc) = "Holds CAVV data. Should be '0' (zero) filled if ProtectBuy product value not present."];
+  string network_reference_id = 30 [(cko.doc) = "Unique value representing specific transactions. Space-filled if not provided."];
+  string atm_interchange_fee_in_usd = 31 [(cko.doc) = "Format: Precision 19, Scale 6."];
+  string atm_security_fee_in_usd = 32 [(cko.doc) = "Format: Precision 19, Scale 6."];
+  string atm_network_international_processing_fee_in_usd = 33 [(cko.doc) = "Format: Precision 19, Scale 6."];
+  string atm_interchange_fee_in_settlement_currency = 34 [(cko.doc) = "Format: Precision 19, Scale 6."];
+  string atm_security_fee_in_settlement_currency = 35 [(cko.doc) = "Format: Precision 19, Scale 6."];
+  string atm_network_international_processing_fee_in_settlement_currency = 36 [(cko.doc) = "Format: Precision 19, Scale 6."];
+  string surcharge_fee = 37 [(cko.doc) = "Format: Precision 9, Scale 2."];
+  string acquirer_geo_code = 38 [(cko.doc) = "Acquirer Geographic Area Code (as submitted in Electronic Interchange field AQGEO). Refer to the Data Tables available on {{ cookiecutter.scheme_slug }} InfoNet."];
+  string card_product_type = 39 [(cko.doc) = "Refer to the Data Tables available on {{ cookiecutter.scheme_slug }} InfoNet."];
+  string mcc_code = 40 [(cko.doc) = "Merchant Classification Code (as submitted in Electronic Interchange field MCCCD). Refer to the Data Tables available on {{ cookiecutter.scheme_slug }} InfoNet."];
+  string intes_code = 41 [(cko.doc) = "International Establishment Code (as submitted in Electronic Interchange field INTES). Refer to the Data Tables available on {{ cookiecutter.scheme_slug }} InfoNet."];
+  string merchant_id = 42 [(cko.doc) = "Member Establishment Number (as submitted in Electronic Interchange field SENUM)."];
+  string cardholder_present = 43 [(cko.doc) = "Card Holder Present Indicator (as submitted in Electronic Interchange field CHOLDP)."];
+  string card_present = 44 [(cko.doc) = "Card Present Indicator obtained in Xpress Authorization (as submitted in Electronic Interchange field CARDP)."];
+  string capture_method = 45 [(cko.doc) = "Card Input Data Method Used in Xpress Authorization (as submitted in Electronic Interchange field CPTRM)."];
+  string merchant_geo_code = 46 [(cko.doc) = "Geographic Area Code (as submitted on Electronic Interchange field GEOCD). Refer to the Data Tables available on {{ cookiecutter.scheme_slug }} InfoNet."];
+  string issuer_geo_code = 47 [(cko.doc) = "Country of Issuance as recorded on {{ cookiecutter.scheme_slug }} Cycle Range Register. Refer to the Data Tables available on {{ cookiecutter.scheme_slug }} InfoNet."];
+  string merchant_pan = 48 [(cko.doc) = "Merchant PAN/QR Code."];
+  string special_conditions_indicator = 49 [(cko.doc) = "Indicates the presence of a special condition in the charge. This is the same value from the Issuer Interchange File (Field:XD.SPECON)."];
+  string filler = 50 [(cko.doc) = "This field is space-filled."];
+}

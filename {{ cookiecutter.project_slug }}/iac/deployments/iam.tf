@@ -103,8 +103,8 @@ data "aws_iam_policy_document" "cloud_watch" {
       "cloudwatch:PutMetricData"
     ]
     resources = [
-      aws_cloudwatch_log_group.dci_settlement.arn,
-      "${aws_cloudwatch_log_group.dci_settlement.arn}:*"
+      aws_cloudwatch_log_group.{{ cookiecutter.scheme_slug }}_settlement.arn,
+      "${aws_cloudwatch_log_group.{{ cookiecutter.scheme_slug }}_settlement.arn}:*"
     ]
   }
 }
@@ -116,7 +116,7 @@ data "aws_iam_policy_document" "ecr" {
       "ecr:BatchGetImage",
       "ecr:BatchCheckLayerAvailability"
     ]
-    resources = [data.aws_ecr_repository.dci_settlement.arn]
+    resources = [data.aws_ecr_repository.{{ cookiecutter.scheme_slug }}_settlement.arn]
   }
 
   statement {
@@ -137,7 +137,7 @@ data "aws_iam_policy_document" "s3" {
     ]
     resources = [
       data.aws_s3_bucket.scheme_settlements_bucket.arn,
-      "${data.aws_s3_bucket.scheme_settlements_bucket.arn}/dci/*"
+      "${data.aws_s3_bucket.scheme_settlements_bucket.arn}/{{ cookiecutter.scheme_slug }}/*"
     ]
   }
 }

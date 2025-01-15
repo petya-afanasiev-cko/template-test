@@ -1,6 +1,6 @@
 #!/bin/sh
 
-docker build -t dci-settlement .
+docker build -t {{ cookiecutter.scheme_slug }}-settlement .
 
 docker compose pull
 

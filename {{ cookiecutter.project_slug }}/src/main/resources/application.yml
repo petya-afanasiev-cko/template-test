@@ -1,6 +1,6 @@
 spring:
   application:
-    name: dci-settlement
+    name: {{ cookiecutter.scheme_slug }}-settlement
   profiles: ##profiles gets overwritten by ECS IAC.
     active: localdev
   batch:

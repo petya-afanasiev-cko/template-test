@@ -10,7 +10,7 @@ resource "aws_cloudwatch_event_rule" "s3_to_batch" {
       },
       "object": {
         "key": [{
-          "prefix": "dci/incoming/"
+          "prefix": "{{ cookiecutter.scheme_slug }}/incoming/"
         }]
       }
     }
@@ -31,11 +31,11 @@ resource "aws_cloudwatch_event_target" "eventbridge_to_batch" {
   }
   
   dead_letter_config {
-    arn = aws_sqs_queue.dci_settlement_dl.arn
+    arn = aws_sqs_queue.{{ cookiecutter.scheme_slug }}_settlement_dl.arn
   }
 }
 
-resource "aws_cloudwatch_log_group" "dci_settlement_test" { 
+resource "aws_cloudwatch_log_group" "{{ cookiecutter.scheme_slug }}_settlement_test" { 
   //TODO remove this cloudwatch group and the target below after confirming batch works as expected with our code and ECR image.
   //This cloudwatch group is there to test if the eventbridge target/rule work and you will see s3 upload events in the cloudwatch logs in this group.
   name = "/aws/events/${local.application_name}"
@@ -44,5 +44,5 @@ resource "aws_cloudwatch_log_group" "dci_settlement_test" {
 resource "aws_cloudwatch_event_target" "log_eventbridge" {
   rule      = aws_cloudwatch_event_rule.s3_to_batch.name
   target_id = "log_eventbridge"
-  arn       = aws_cloudwatch_log_group.dci_settlement_test.arn
+  arn       = aws_cloudwatch_log_group.{{ cookiecutter.scheme_slug }}_settlement_test.arn
 }

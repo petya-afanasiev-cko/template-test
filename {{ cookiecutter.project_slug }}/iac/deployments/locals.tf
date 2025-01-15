@@ -1,5 +1,5 @@
 locals {
-  application_name        = "dci-settlement"
+  application_name        = "{{ cookiecutter.scheme_slug }}-settlement"
   team_name               = "scheme-settlements"
   
   cloudflare_non_prod_vpn = "Management NonProd Private Subnets"

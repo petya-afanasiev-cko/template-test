@@ -1,4 +1,4 @@
-resource "aws_cloudwatch_log_group" "dci_settlement" {
+resource "aws_cloudwatch_log_group" "{{ cookiecutter.scheme_slug }}_settlement" {
   name              = "/aws/batch/${local.application_name}"
   retention_in_days = 365
 }
@@ -8,12 +8,12 @@ resource "aws_lambda_permission" "datadog_forwarder_permission" {
   action        = "lambda:InvokeFunction"
   function_name = data.aws_lambda_function.datadog_forwarder.function_name
   principal     = "logs.eu-west-1.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_log_group.dci_settlement.arn}:*"
+  source_arn    = "${aws_cloudwatch_log_group.{{ cookiecutter.scheme_slug }}_settlement.arn}:*"
 }
 
 resource "aws_cloudwatch_log_subscription_filter" "datadog_forwarder_filter" {
   name            = "${local.application_name}-datadog-forwarder"
-  log_group_name  = aws_cloudwatch_log_group.dci_settlement.name
+  log_group_name  = aws_cloudwatch_log_group.{{ cookiecutter.scheme_slug }}_settlement.name
   destination_arn = data.aws_lambda_function.datadog_forwarder.arn
   filter_pattern  = ""
 }

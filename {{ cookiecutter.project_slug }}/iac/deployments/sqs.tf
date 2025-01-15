@@ -6,8 +6,8 @@ locals {
   receive_wait_time_seconds  = 20
 }
 
-resource "aws_sqs_queue" "dci_settlement" {
-  name                       = "dci-settlement"
+resource "aws_sqs_queue" "{{ cookiecutter.scheme_slug }}_settlement" {
+  name                       = "{{ cookiecutter.scheme_slug }}-settlement"
   kms_master_key_id          = data.aws_kms_key.scheme_settlements_kms_key.arn
   visibility_timeout_seconds = local.visibility_timeout_seconds
   delay_seconds              = local.delay_seconds
@@ -16,12 +16,12 @@ resource "aws_sqs_queue" "dci_settlement" {
   receive_wait_time_seconds  = local.receive_wait_time_seconds
 
   redrive_policy = <<EOF
-    {"deadLetterTargetArn":"${aws_sqs_queue.dci_settlement_dl.arn}","maxReceiveCount":5}
+    {"deadLetterTargetArn":"${aws_sqs_queue.{{ cookiecutter.scheme_slug }}_settlement_dl.arn}","maxReceiveCount":5}
   EOF
 }
 
-resource "aws_sqs_queue" "dci_settlement_dl" {
-  name                       = "dci-settlement-dl"
+resource "aws_sqs_queue" "{{ cookiecutter.scheme_slug }}_settlement_dl" {
+  name                       = "{{ cookiecutter.scheme_slug }}-settlement-dl"
   kms_master_key_id          = data.aws_kms_key.scheme_settlements_kms_key.arn
   visibility_timeout_seconds = local.visibility_timeout_seconds
   delay_seconds              = local.delay_seconds
@@ -41,7 +41,7 @@ data "aws_iam_policy_document" "s3_upload_notification_to_sqs_policy" {
     }
 
     actions   = ["sqs:SendMessage"]
-    resources = [aws_sqs_queue.dci_settlement.arn]
+    resources = [aws_sqs_queue.{{ cookiecutter.scheme_slug }}_settlement.arn]
 
     condition {
       test     = "ArnEquals"
@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "s3_upload_notification_to_sqs_policy" {
   }
 }
 
-resource "aws_sqs_queue_policy" "dci_settlement_sqs_policy" {
-  queue_url = aws_sqs_queue.dci_settlement.id
+resource "aws_sqs_queue_policy" "{{ cookiecutter.scheme_slug }}_settlement_sqs_policy" {
+  queue_url = aws_sqs_queue.{{ cookiecutter.scheme_slug }}_settlement.id
   policy    = data.aws_iam_policy_document.s3_upload_notification_to_sqs_policy.json
 }

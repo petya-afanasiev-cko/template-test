@@ -48,7 +48,7 @@ resource "aws_batch_job_definition" "job_definition" {
     logConfiguration = {
       logDriver = "awslogs",
       options = {
-        awslogs-group         = aws_cloudwatch_log_group.dci_settlement.name
+        awslogs-group         = aws_cloudwatch_log_group.{{ cookiecutter.scheme_slug }}_settlement.name
         awslogs-region        = "eu-west-1"
         awslogs-stream-prefix = "batch"
       }

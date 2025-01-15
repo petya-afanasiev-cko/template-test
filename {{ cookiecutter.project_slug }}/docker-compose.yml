@@ -1,4 +1,4 @@
-name: dci-settlement
+name: {{ cookiecutter.scheme_slug }}-settlement
 services:
   localstack:
     container_name: localstack
@@ -17,7 +17,7 @@ services:
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
     networks:
-      - dci-settlement-network
+      - {{ cookiecutter.scheme_slug }}-settlement-network
     volumes:
       - localstack_data:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
@@ -29,7 +29,7 @@ services:
 #      context: ./docker
 #      dockerfile: ./terraform/Dockerfile
 #    networks:
-#      - dci-settlement-network
+#      - {{ cookiecutter.scheme_slug }}-settlement-network
 #    depends_on:
 #      - localstack
 
@@ -37,7 +37,7 @@ services:
     container_name: kafka
     image: confluentinc/confluent-local:7.8.0
     networks:
-      - dci-settlement-network
+      - {{ cookiecutter.scheme_slug }}-settlement-network
     ports:
       - "9092:9092"
       - "9091:9091"
@@ -64,7 +64,7 @@ services:
     ports:
       - 8085:8085
     networks:
-      - dci-settlement-network
+      - {{ cookiecutter.scheme_slug }}-settlement-network
     depends_on:
       - kafka
     environment:
@@ -80,7 +80,7 @@ services:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     networks:
-      - dci-settlement-network
+      - {{ cookiecutter.scheme_slug }}-settlement-network
     depends_on:
       - kafka
       - schema-registry
@@ -91,8 +91,8 @@ services:
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8085
 networks:
-  dci-settlement-network:
-    name: dci-settlement-network
+  {{ cookiecutter.scheme_slug }}-settlement-network:
+    name: {{ cookiecutter.scheme_slug }}-settlement-network
 
 volumes:
   localstack_data: { }

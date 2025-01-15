@@ -12,10 +12,10 @@ RUN mkdir /app && chown -Rv app:app /app /tmp && chmod 700 -Rv /app /tmp
 WORKDIR /app
 USER app
 ARG JAR_FILE=build/libs/*.jar
-COPY --from=builder /workspace/${JAR_FILE} ./dci-settlement.jar
+COPY --from=builder /workspace/${JAR_FILE} ./{{ cookiecutter.scheme_slug }}-settlement.jar
 COPY --from=builder /workspace/dd-java-agent.jar ./dd-java-agent.jar
 
 ENTRYPOINT ["java", \
             "-javaagent:/app/dd-java-agent.jar", \
             "-Xmx2048m", \
-            "-jar", "/app/dci-settlement.jar"]
+            "-jar", "/app/{{ cookiecutter.scheme_slug }}-settlement.jar"]

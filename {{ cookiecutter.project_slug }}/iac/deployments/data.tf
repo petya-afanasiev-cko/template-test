@@ -12,9 +12,9 @@ data "aws_iam_role" "github_runner_role" {
   provider = aws.mgmt
 }
 
-data "aws_ecr_repository" "dci_settlement" {
+data "aws_ecr_repository" "{{ cookiecutter.scheme_slug }}_settlement" {
   provider = aws.mgmt
-  name     = "cko-fort/dci-settlement"
+  name     = "cko-fort/{{ cookiecutter.scheme_slug }}-settlement"
   depends_on = [module.ecr]
 }
 

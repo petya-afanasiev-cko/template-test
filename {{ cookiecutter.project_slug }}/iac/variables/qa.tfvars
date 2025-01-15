@@ -7,7 +7,7 @@ assume_role_arn = "arn:aws:iam::711533748762:role/spacelift"
 aws_environment = "qa"
 
 tags = {
-  "repo" : "cko-fort/dci-settlement",
+  "repo" : "cko-fort/{{ cookiecutter.scheme_slug }}-settlement",
   "team" : "scheme-settlements",
   "product" : "scheme-settlements",
   "pillar" : "financial-infrastructure",
