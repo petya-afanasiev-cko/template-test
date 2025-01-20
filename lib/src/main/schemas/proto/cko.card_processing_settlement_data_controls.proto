@@ -1,0 +1,60 @@
+syntax = "proto3";
+package cko.card_processing_settlement_data_controls;
+
+import "cko.card_processing_settlement.proto";
+import "cko.card_processing_settlement_dci.proto";
+import "cko.card_processing_settlement_visa.proto";
+import "cko.proto";
+import "google/protobuf/timestamp.proto";
+
+message RawSettlementRecord {
+  string primary_key = 1 [
+    (cko.doc) = "Provided by the scheme loader. The original event and all its corrections will have the same Primary Key",
+    (cko.pk) = true
+  ];
+  string idempotency_key = 2 [(cko.doc) = "A unique identifier of the event. Should be used for deduplication"];
+  string event_id = 3 [(cko.doc) = "A unique identifier for the message, a GUID generated during publishing, may differ when reprocessing the same settlement file twice."];
+  string correlation_id = 4 [(cko.doc) = "Used in logs by downstream services to correlate logs across service boundaries"];
+  .cko.card_processing_settlement.Scheme scheme = 5 [(cko.doc) = "Scheme identifier"];
+  string settlement_totals_group_key = 6 [(cko.doc) = "Transactions group identifier is a string that is generated on the loader side using scheme-specific logic to group transactions together for reconciliation with the SettlementTotalsEventPublic."];
+  bool is_not_funds_movement_record = 7 [(cko.doc) = "A flag that would allow downstream consumers to easily determine whether the event has a financial impact or not. By default, all events have a financial impact"];
+  .cko.card_processing_settlement_data_controls.SettlementRecordMetadata event_metadata = 8 [(cko.doc) = "A raw settlement event metadata"];
+
+  oneof event_data {
+    .cko.card_processing_settlement_visa.ClearingAndSettlementAdviceEventData visa_cas_event_data = 9 [(cko.doc) = "A structured representation of a Visa Clearing and Settlement Advice (CaS) record"];
+    .cko.card_processing_settlement_data_controls.DefaultRecord default_record = 100 [(cko.doc) = "A message for unknown records"];
+    .cko.card_processing_settlement_dci.Charge charge = 101 [(cko.doc) = "A structured representation of a DCI Charge record"];
+  }
+}
+message SourceFileInfo {
+  string original_file_name = 1 [(cko.doc) = "Scheme settlement file name from where the event originated"];
+  uint32 original_file_line_number = 2 [(cko.doc) = "Scheme settlement file line number from where the event originated"];
+  string original_file_path = 3 [(cko.doc) = "A path where the file was taken"];
+}
+message SettlementRecordMetadata {
+  .cko.card_processing_settlement_data_controls.SourceFileInfo source_file_info = 1 [(cko.doc) = "A source file information"];
+  .google.protobuf.Timestamp event_timestamp = 2 [(cko.doc) = "UTC Timestamp when the event was created"];
+  string record_type = 3 [(cko.doc) = "A scheme specific record type identifier"];
+}
+message SettlementTotalsEventPublic {
+  string primary_key = 1 [
+    (cko.doc) = "Provided by the scheme loader. The original event and all its corrections will have the same Primary Key",
+    (cko.pk) = true
+  ];
+  string idempotency_key = 2 [(cko.doc) = "A unique identifier of the event. Should be used for deduplication"];
+  string event_id = 3 [(cko.doc) = "A unique identifier for the message, a GUID generated during publishing, may differ when reprocessing the same settlement file twice."];
+  string correlation_id = 4 [(cko.doc) = "Used in logs by downstream services to correlate logs across service boundaries"];
+  .cko.card_processing_settlement.Scheme scheme = 5 [(cko.doc) = "Scheme identifier"];
+  string settlement_totals_group_key = 6 [(cko.doc) = "Transactions group identifier is a string that is generated on the loader side using scheme-specific logic to group transactions together for reconciliation total amounts with the SettlementTotalsPublic events."];
+  .cko.card_processing_settlement_data_controls.SettlementTotalsEventData event_data = 7 [(cko.doc) = "A raw settlement event payload containing data in a raw format as schemes provide us"];
+  .cko.card_processing_settlement_data_controls.SettlementRecordMetadata event_metadata = 8 [(cko.doc) = "A raw settlement event metadata"];
+}
+message SettlementTotalsEventData {
+  .cko.Money total_net_amount = 1 [(cko.doc) = "Total net amount for the given settlement_totals_group_key, can be null if total net amount reconciliation is not needed"];
+  .cko.Money total_gross_amount = 2 [(cko.doc) = "Total gross amount for the given settlement_totals_group_key, can be null if total gross amount reconciliation is not needed"];
+  .cko.Money total_interchange_fee_amount = 3 [(cko.doc) = "Total interchange_fee amount for the given settlement_totals_group_key, can be null if total interchange_fee amount reconciliation is not needed"];
+  .cko.Money total_scheme_fee_amount = 4 [(cko.doc) = "Total scheme_fee amount for the given settlement_totals_group_key, can be null if total scheme_fee amount reconciliation is not needed"];
+}
+message DefaultRecord {
+  string record_content = 1 [(cko.doc) = "record content repreresented as a string"];
+}

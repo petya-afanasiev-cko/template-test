@@ -1,0 +1,19 @@
+syntax = "proto3";
+package meta;
+
+import "google/protobuf/descriptor.proto";
+
+message fld {
+  extend .google.protobuf.FieldOptions {
+    repeated .meta.DataHubMetadataType type = 6000 [json_name = "type"];
+  }
+}
+enum DataHubMetadataType {
+  PROPERTY = 0;
+  TAG = 1;
+  TAG_LIST = 2;
+  TERM = 3;
+  OWNER = 4;
+  DOMAIN = 5;
+  DEPRECATION = 6;
+}

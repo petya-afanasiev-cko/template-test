@@ -1,0 +1,215 @@
+syntax = "proto3";
+package cko.card_processing_settlement_visa;
+
+import "cko.proto";
+
+message ClearingAndSettlementAdviceEventData {
+  .cko.card_processing_settlement_visa.ClearingAndSettlementAdviceTcr0 tcr0 = 1 [
+    (cko.doc) = "These tables contain the Multipurpose Message (TC 33) record layout and edit criteria for TCR 0 - BASE II CLEARING AND SETTLEMENT ADVICE.",
+    (cko.map) = "Tcr0"
+  ];
+  .cko.card_processing_settlement_visa.ClearingAndSettlementAdviceTcr1 tcr1 = 2 [
+    (cko.doc) = "This table contains the Multipurpose Message (TC 33) record layout and edit criteria for TCR 1 - BASE II Clearing and Settlement Advice.",
+    (cko.map) = "Tcr1"
+  ];
+}
+message ClearingAndSettlementAdviceTcr0 {
+  string transaction_code = 1 [
+    (cko.doc) = "This field will contain the value of 33 (Clearing and settlement advice).",
+    (cko.map) = "TransactionCode"
+  ];
+  string transaction_code_qualifier = 2 [
+    (cko.doc) = "This field will contain the value of 0 (Default).",
+    (cko.map) = "TransactionCodeQualifier"
+  ];
+  string transaction_component_sequence_number = 3 [
+    (cko.doc) = "This field will contain the value of 0, indicating the first component record of the transaction.",
+    (cko.map) = "TransactionComponentSequenceNumber"
+  ];
+  string destination_bin = 4 [
+    (cko.doc) = "This field will contain a valid acquiring or issuing identifier, or Clearing and Settlement Advice Split Route destination identifier, if present.",
+    (cko.map) = "DestinationBin"
+  ];
+  string source_bin = 5 [
+    (cko.doc) = "This field will contain a valid acquiring or issuing identifier.",
+    (cko.map) = "SourceBin"
+  ];
+  string cas_advice_record_id = 6 [
+    (cko.doc) = "This field will contain the value \'CAS\' (Clearing and Settlement).",
+    (cko.map) = "CasAdviceRecordId"
+  ];
+  string originator_recipient_indicator = 7 [
+    (cko.doc) = "This field will indicate whether the transaction data is for the originator (O) or recipient (R).",
+    (cko.map) = "OriginatorRecipientIndicator"
+  ];
+  string transaction_code_of_financial_transaction = 8 [
+    (cko.doc) = "This field will contain the transaction code of the financial transaction.",
+    (cko.map) = "TransactionCodeOfFinancialTransaction"
+  ];
+  string tcq_of_financial_transaction = 9 [
+    (cko.doc) = "This field contains the Transaction Code Qualifier of the financial transaction.",
+    (cko.map) = "TcqOfFinancialTransaction"
+  ];
+  string central_processing_date = 10 [
+    (cko.doc) = "This field will contain the central processing date (CPD) of the transaction in YDDD format, where Y = year (1-9) and DDD = day (001-366).",
+    (cko.map) = "CentralProcessingDate"
+  ];
+  string transaction_identifier = 11 [
+    (cko.doc) = "This field will contain the transaction identifier, a unique value assigned to each transaction.",
+    (cko.map) = "TransactionIdentifier"
+  ];
+  string account_number = 12 [
+    (cko.doc) = "This field will contain the primary account number (PAN) of the transaction.",
+    (cko.map) = "AccountNumber",
+    (cko.pci) = true,
+    (cko.pii) = true
+  ];
+  string account_number_extension = 13 [
+    (cko.doc) = "This field will contain the extension for the primary account number.",
+    (cko.map) = "AccountNumberExtension",
+    (cko.pci) = true,
+    (cko.pii) = true
+  ];
+  string acquirer_reference_number = 14 [
+    (cko.doc) = "This field will contain the 23-digit identification number assigned by the acquirer.",
+    (cko.map) = "AcquirerReferenceNumber"
+  ];
+  string card_acceptor_id = 15 [
+    (cko.doc) = "This field will contain the acquirer-assigned alphanumeric code that identifies the card acceptor.",
+    (cko.map) = "CardAcceptorId"
+  ];
+  string terminal_id = 16 [
+    (cko.doc) = "This field will contain the terminal identifier.",
+    (cko.map) = "TerminalId"
+  ];
+  string source_amount = 17 [
+    (cko.doc) = "This field will contain the source amount in the currency of the transaction.",
+    (cko.map) = "SourceAmount"
+  ];
+  string source_currency_code = 18 [
+    (cko.doc) = "This field will contain the source currency code of the transaction.",
+    (cko.map) = "SourceCurrencyCode"
+  ];
+  string settlement_flag = 19 [
+    (cko.doc) = "This field indicates whether the transaction is eligible for settlement processing.",
+    (cko.map) = "SettlementFlag"
+  ];
+  string settlement_service_id = 20 [
+    (cko.doc) = "This field will contain the settlement service identifier.",
+    (cko.map) = "SettlementServiceId"
+  ];
+  string settlement_currency = 21 [
+    (cko.doc) = "This field will contain the settlement currency code.",
+    (cko.map) = "SettlementCurrency"
+  ];
+  string leaf_level_sre_id = 22 [
+    (cko.doc) = "This field will contain the Settlement Reporting Entity (SRE) ID.",
+    (cko.map) = "LeafLevelSreId"
+  ];
+  string funds_transfer_sre_id = 23 [
+    (cko.doc) = "This field contains the Funds Transfer SRE-ID based on the recipient of the transaction.",
+    (cko.map) = "FundsTransferSreId"
+  ];
+  string settlement_amount_interchange = 24 [
+    (cko.doc) = "This field will contain the interchange settlement amount.",
+    (cko.map) = "SettlementAmountInterchange"
+  ];
+  string settlement_amount_sign = 25 [
+    (cko.doc) = "This field indicates the sign of the settlement amount, with values C (Credit) or D (Debit).",
+    (cko.map) = "SettlementAmountSign"
+  ];
+  string usage_code = 26 [
+    (cko.doc) = "This field will indicate the type of presentment (e.g., 1 for first presentment, 2 for second presentment).",
+    (cko.map) = "UsageCode"
+  ];
+  string reclassification_indicator = 27 [
+    (cko.doc) = "This field indicates whether the transaction was reclassified, with values Y (Yes) or N (No).",
+    (cko.map) = "ReclassificationIndicator"
+  ];
+  string requested_payment_service = 28 [
+    (cko.doc) = "This field defines the acquirer\'s choice of a specific custom payment service.",
+    (cko.map) = "RequestedPaymentService"
+  ];
+  string reserved = 29 [
+    (cko.doc) = "This field is reserved for future use and will contain spaces.",
+    (cko.map) = "Reserved"
+  ];
+}
+message ClearingAndSettlementAdviceTcr1 {
+  string transaction_code = 1 [
+    (cko.doc) = "This field will contain the value of 33 (Clearing and Settlement advice).",
+    (cko.map) = "TransactionCode"
+  ];
+  string transaction_code_qualifier = 2 [
+    (cko.doc) = "This field will contain the value of 0 (Default).",
+    (cko.map) = "TransactionCodeQualifier"
+  ];
+  string transaction_component_sequence_number = 3 [
+    (cko.doc) = "This field will contain the value of 1.",
+    (cko.map) = "TransactionComponentSequenceNumber"
+  ];
+  string interchange_fee_amount = 4 [
+    (cko.doc) = "This field will contain the interchange or client-to-client fee amount in the settlement currency that was assessed on the transaction. The field is right-justified, with six decimals implied.",
+    (cko.map) = "InterchangeFeeAmount"
+  ];
+  string interchange_fee_sign = 5 [
+    (cko.doc) = "This field will indicate whether the interchange or client-to-client fee amount is a credit or debit for the transaction and will contain one of these values: C (Credit), D (Debit).",
+    (cko.map) = "InterchangeFeeSign"
+  ];
+  string merchant_verification_value = 6 [
+    (cko.doc) = "This field will contain the merchant verification value (MVV) that was assigned to the merchant. Values: A-F, 0-9. Default value: spaces.",
+    (cko.map) = "MerchantVerificationValue"
+  ];
+  string fee_program_indicator = 7 [
+    (cko.doc) = "This field contains an interchange reimbursement fee program indicator (FPI). This field is left-justified and space-filled.",
+    (cko.map) = "FeeProgramIndicator"
+  ];
+  string fee_descriptor = 8 [
+    (cko.doc) = "If destined to Originator/Source, use Source Fee descriptor. If destined to Recipient/Destination, use Destination Fee descriptor.",
+    (cko.map) = "FeeDescriptor"
+  ];
+  string conversion_date = 9 [
+    (cko.doc) = "This field will contain the date of the currency file that was used to convert the currency and will be in the format of YDDD, where: Y = year (1-9), DDD = day (01-366).",
+    (cko.map) = "ConversionDate"
+  ];
+  string settlement_date = 10 [
+    (cko.doc) = "This field will contain the settlement date of the transaction and will be in the format of YDDD, where: Y = year (1-9), DDD = day (01-366).",
+    (cko.map) = "SettlementDate"
+  ];
+  string base2_unique_file_id = 11 [
+    (cko.doc) = "A unique file number (such as an identification) used by the Edit Package for history checking.",
+    (cko.map) = "Base2UniqueFileId"
+  ];
+  string reserved = 12 [
+    (cko.doc) = "This field is reserved for future use and will contain spaces.",
+    (cko.map) = "Reserved"
+  ];
+  string persistent_fx_applied_indicator = 13 [
+    (cko.doc) = "This field contains a code that identifies if the transaction underwent Persistent FX service processing. Valid values are: Y (Transaction eligible, service applied), N (Transaction eligible, service not applied), Space (Transaction not eligible).",
+    (cko.map) = "PersistentFxAppliedIndicator"
+  ];
+  string rate_table_id = 14 [
+    (cko.doc) = "This field will contain the rate table ID of the foreign exchange rate table used for currency conversion. The rate table ID contains alpha and numeric values for a total of five characters.",
+    (cko.map) = "RateTableId"
+  ];
+  string additional_token_response_information = 15 [
+    (cko.doc) = "This field contains a value that identifies if the transaction is eligible for token services. Valid token service values are: 1 (Token program), Space (Not applicable).",
+    (cko.map) = "AdditionalTokenResponseInformation"
+  ];
+  string agreement_id = 16 [
+    (cko.doc) = "This field will contain the agreement ID associated with the foreign exchange rate table used for currency conversion.",
+    (cko.map) = "AgreementId"
+  ];
+  string enabler_verification_value = 17 [
+    (cko.doc) = "A five-character identifier used by Visa to identify enablers. EVV assignment is determined by Visa and communicated by Visa to enablers and acquirers.",
+    (cko.map) = "EnablerVerificationValue"
+  ];
+  string visa_merchant_identifier = 18 [
+    (cko.doc) = "This field contains a unique identifier value assigned by Visa for each merchant included in the program.",
+    (cko.map) = "VisaMerchantIdentifier"
+  ];
+  string reserved1 = 19 [
+    (cko.doc) = "This field is reserved for future use and will contain spaces.",
+    (cko.map) = "Reserved1"
+  ];
+}

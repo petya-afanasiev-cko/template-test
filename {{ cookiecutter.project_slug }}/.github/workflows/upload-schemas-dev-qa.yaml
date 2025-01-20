@@ -14,7 +14,7 @@ jobs:
     name: Verify and Deploy Shared Schemas to DEV
     uses: cko-data-platform/cdp-cicd-lib/.github/workflows/schema_reg.yaml@main
     with:
-      runner-name: {% raw %}${{ github.repository_owner }}-default-runners-github-runners{% endraw %}
+      runner-name: ${% raw %}{{ github.repository_owner }}-default-runners-github-runners{% endraw %}
       # Where have you put your schemas
       protobuf-path: src/main/schemas/proto
       # Point to your subjects file

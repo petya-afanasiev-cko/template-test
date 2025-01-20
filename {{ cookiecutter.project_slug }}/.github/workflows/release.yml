@@ -1,0 +1,105 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: ECR image version
+        required: true
+      env:
+        description: 'Environment to deploy the application.'
+        type: choice
+        options:
+          - qa
+          - prod
+        default: qa
+  workflow_call:
+    inputs:
+      version:
+        type: string
+        description: ECR image version
+        required: true
+      env:
+        description: 'Environment to deploy the application.'
+        type: string
+        default: qa
+    secrets:
+      SPACELIFT_API_KEY_ID:
+        required: true
+      SPACELIFT_API_KEY_SECRET:
+        required: true
+      JIRA_USER_EMAIL:
+        description: Email of the user for which Access Token was created for.
+        required: true
+      JIRA_API_TOKEN:
+        description: Access Token for Authorization.
+        required: true
+      SLACK_WEBHOOK_URL:
+        description: Slack webhook to send deployment notifications
+        required: true
+
+jobs:
+  release:
+    runs-on: [ cko-fort-default-runners-github-runners ]
+    steps:
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install spacectl
+        uses: spacelift-io/setup-spacectl@main
+        env:
+          GITHUB_TOKEN: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}
+      - name: Create Task Def Revisions
+        env:
+          SPACELIFT_API_KEY_ENDPOINT: https://cko-fort.app.spacelift.io/
+          SPACELIFT_API_KEY_ID: ${% raw %}{{ secrets.SPACELIFT_API_KEY_ID }}{% endraw %}
+          SPACELIFT_API_KEY_SECRET: ${% raw %}{{ secrets.SPACELIFT_API_KEY_SECRET }}{% endraw %}
+        run: |
+          spacectl stack set-current-commit --sha ${% raw %}{{ github.sha }}{% endraw %} --id {{ cookiecutter.project_slug }}-main-iac-dynamic-${% raw %}{{ inputs.env }}{% endraw %}
+          spacectl stack environment setvar --id {{ cookiecutter.project_slug }}-main-iac-dynamic-{% raw %}${{ inputs.env }} TF_VAR_git_tag ${{ inputs.version }} {% endraw %}
+          spacectl stack deploy --tail --id {{ cookiecutter.project_slug }}-main-iac-dynamic-{% raw %}${{ inputs.env }} --run-metadata "main" {% endraw %}
+      - name: Send Slack Notification
+        if: (inputs.env == 'prod' && always()) || (inputs.env == 'qa' && failure())
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "text": "{{ cookiecutter.project_name }} release has finished",
+              {% raw %}
+              "attachments": [
+                {
+                  "text": "Environment: ${{ inputs.env }}",
+                  "fields": [
+                    {
+                      "title": "Version",
+                      "value": "${{ inputs.version }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Status",
+                      "value": "${{ job.status }}",
+                      "short": true
+                    }
+                  ],
+                  "color": "${{ job.status == 'success' && 'good' || 'danger' }}"
+                  {% endraw %}
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: {% raw %}${{ secrets.SLACK_WEBHOOK_URL }}{% endraw %}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+  
+  complete-jira-release:
+    needs: [ release ]
+    if: inputs.env == 'prod'
+    name: Complete JIRA Release
+    uses: ./.github/workflows/complete-jira-release.yml
+    with:
+      VERSION: {% raw %}${{ inputs.version }}{% endraw %}
+      APPLICATION: {{ cookiecutter.project_slug }}
+      PROJECT_KEY: SETL
+    secrets:
+      JIRA_USER_EMAIL: {% raw %}${{ secrets.JIRA_USER_EMAIL }}{% endraw %}
+      JIRA_API_TOKEN: {% raw %}${{ secrets.JIRA_API_TOKEN }}{% endraw %}

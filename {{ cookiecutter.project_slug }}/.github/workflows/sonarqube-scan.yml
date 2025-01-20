@@ -4,7 +4,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
+ {% raw %}
 jobs:
   build:
     name: SonarQube scan
@@ -20,9 +20,17 @@ jobs:
           distribution: 'corretto'
           java-version: 21
 
+      - id: codeartifact-token
+        name: Retrieve CodeArtifact token
+        uses: cko-fort/tl-git-actions/codeartifact-token@v1
+
       - name: Build and analyze
         env:
-          GITHUB_TOKEN: {% raw %}${{ secrets.GITHUB_TOKEN }}{% endraw %}  # Needed to get PR information, if any
-          SONAR_TOKEN: {% raw %}${{ secrets.SONAR_TOKEN }}{% endraw %}
-          SONAR_HOST_URL: {% raw %}${{ secrets.SONAR_HOST_URL }}{% endraw %}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          CODEARTIFACT_AUTH_TOKEN: ${{ steps.codeartifact-token.outputs.codeartifact_auth_token }}
+
         run: ./gradlew test sonar
+
+         {% endraw %}

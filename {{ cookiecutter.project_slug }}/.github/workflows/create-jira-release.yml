@@ -1,0 +1,290 @@
+name: "Create JIRA release ticket"
+
+on:
+  workflow_call:
+    inputs:
+      VERSION:
+        description: Version number for the release.
+        type: string
+        required: false
+      PREVIOUS_VERSION:
+        description: Version number for the release that was last deployed to Production.
+        type: string
+        required: false
+      APPLICATION:
+        description: Name of the application to be released.
+        type: string
+        required: true
+      JIRA_BASE_URL:
+        description: URL of Jira instance.
+        type: string
+        required: false
+        default: https://checkout.atlassian.net
+      PROJECT_KEY:
+        description: The project key as described on JIRA.
+        type: string
+        required: true
+      QA_APPROVER_EMAIL:
+        description: Email of QA approver
+        type: string
+        required: false
+      PRODUCT_APPROVER_EMAIL:
+        description: Email of Product approver
+        type: string
+        required: false
+      ENGINEERING_APPROVER_EMAIL:
+        description: Email of Engineering approver
+        type: string
+        required: false
+    secrets:
+      JIRA_USER_EMAIL:
+        description: Email of the user for which Access Token was created for.
+        required: true
+      JIRA_API_TOKEN:
+        description: Access Token for Authorization.
+        required: true
+{% raw %}
+jobs:
+  retrieve-tags:
+    runs-on: [ self-hosted ]
+    outputs:
+      latest_tag: ${{ steps.get_latest_tag.outputs.LATEST_TAG }}
+      previous_tag: ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}
+      jira_issues: ${{ steps.get_jira_issues.outputs.JIRA_ISSUES }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find Latest Tag
+        id: get_latest_tag
+        run: |
+          latest_tag=${{ inputs.version }}
+          if [ "$latest_tag" == "" ]; then
+            latest_tag=$(git describe --tags --abbrev=0 | grep -v '\-alpha' | tail -1)
+          fi
+          echo "LATEST_TAG=$latest_tag" >> $GITHUB_OUTPUT
+          echo "Latest tag found: $latest_tag"
+
+      - name: Find Previous Tag
+        id: get_previous_tag
+        run: |
+          previous_tag=${{ inputs.PREVIOUS_VERSION }}
+          if [ "$previous_tag" == "" ]; then
+            previous_tag=$(git tag --sort v:refname | grep -v '\-alpha' | grep -B 1 ${{ steps.get_latest_tag.outputs.LATEST_TAG }} | head -1)
+          fi
+          echo "PREVIOUS_TAG=$previous_tag" >> $GITHUB_OUTPUT
+          echo "Previous tag found: $previous_tag"
+
+      - name: Find Jira issues
+        id: get_jira_issues
+        run: |
+          issues=$(git shortlog ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}..${{ steps.get_latest_tag.outputs.LATEST_TAG }} | grep -o '${{ inputs.PROJECT_KEY }}-[[:alnum:]]*' | sort | uniq | paste -sd ',' -)
+          echo "JIRA_ISSUES=$issues" >> $GITHUB_OUTPUT
+          echo "Issues involved in this release: $issues"
+
+
+  create-jira-release:
+    runs-on: [ self-hosted ]
+    needs: [ retrieve-tags ]
+    steps:
+      - name: Get current date
+        id: date
+        run: |
+          localdate=$(date +'%Y-%m-%d')
+          echo "LOCAL_DATE=$localdate" >> $GITHUB_OUTPUT
+          echo "Current date: $localdate"
+
+      - name: Get Jira Project Id
+        id: get_jira_project_id
+        run: |
+          projectId=$(curl --fail --request GET --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/project/${{ inputs.PROJECT_KEY }} -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} -H 'Accept: application/json' -f | jq -r .id)
+          echo "ID=$projectId" >> $GITHUB_OUTPUT
+          echo "Jira project id found: $projectId"
+
+      - name: Create Jira Version
+        id: create_jira_version
+        run: |
+          
+          versionId=$(curl --fail --request POST \
+                                                            --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/version \
+                                                            -u '${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}' \
+                                                            -H 'Accept: application/json' \
+                                                            -H 'Content-Type: application/json' \
+                                                            --data '{
+                                                              "name": "${{ inputs.APPLICATION }}-${{ needs.retrieve-tags.outputs.LATEST_TAG }}",
+                                                              "projectId": "${{ steps.get_jira_project_id.outputs.ID }}",
+                                                              "startDate": "${{ steps.date.outputs.LOCAL_DATE }}"
+                                                            }' -f | jq -r .id )
+          echo "VERSION_ID=$versionId" >> $GITHUB_OUTPUT
+          echo "Jira version created with id: $versionId"
+
+      - name: Update Jira Issue Fix Version
+        continue-on-error: true
+        run: |
+          issues=${{ needs.retrieve-tags.outputs.JIRA_ISSUES }}
+          IFS=","
+          for issue in $issues
+          do 
+            echo "Updating issue $issue"
+            curl --request PUT \
+              --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/issue/$issue \
+              -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+              -H 'Accept: application/json' \
+              -H 'Content-Type: application/json' \
+              --data '{
+                "update": {
+                  "fixVersions": [{"add":{"name": "${{ inputs.APPLICATION }}-${{ needs.retrieve-tags.outputs.LATEST_TAG}}"}}]
+                }
+              }'
+          done
+
+      - name: Get Approvers Account ids
+        id: approvers_account_ids
+        run: |
+          engineering_approver_result=$(curl --request GET  \
+                                      --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/user/search?query=${{ secrets.JIRA_USER_EMAIL }} \
+                                      -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                                      -H 'Accept: application/json' | jq -r .[0].accountId)
+          echo "ENGINEERING_APPROVER=$engineering_approver_result" >> $GITHUB_OUTPUT
+          echo "ENGINEERING_APPROVER=$engineering_approver_result"
+          
+          if [ "${{ inputs.QA_APPROVER_EMAIL }}" != "" ]; then
+            qa_approver_result=$(curl --request GET  \
+                                       --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/user/search?query=${{ inputs.QA_APPROVER_EMAIL }} \
+                                       -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                                       -H 'Accept: application/json' |jq -r .[0].accountId)
+            echo "QA_APPROVER=$qa_approver_result" >> $GITHUB_OUTPUT
+          else
+            echo "QA_APPROVER=$engineering_approver_result" >> $GITHUB_OUTPUT
+          fi
+          
+          if [ "${{ inputs.PRODUCT_APPROVER_EMAIL }}" != "" ]; then
+            product_approver_result=$(curl --request GET  \
+                                            --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/user/search?query=${{ inputs.PRODUCT_APPROVER_EMAIL }} \
+                                            -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                                            -H 'Accept: application/json' |jq -r .[0].accountId)
+            echo "PRODUCT_APPROVER=$product_approver_result" >> $GITHUB_OUTPUT
+          else
+            echo "PRODUCT_APPROVER=$engineering_approver_result" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Get Jira Release
+        id: get_jira_release
+        run: |
+          # Sleep 10 to wait for Jira release ticket is created by automation
+          sleep 10
+          
+          releaseKey=$(curl --location --request POST ${{ inputs.JIRA_BASE_URL }}/rest/api/3/search \
+                                                  --header 'Accept: application/json' \
+                                                  --header 'Content-Type: application/json' \
+                                                  --user ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                                                  --data-raw '{
+                                                    "jql": "project = RELEASE and  summary ~ ${{ inputs.APPLICATION }}-${{ needs.retrieve-tags.outputs.LATEST_TAG }}"
+                                                  }'| jq -r .issues[0].key)
+          echo "RELEASE_KEY=$releaseKey" >> $GITHUB_OUTPUT
+          echo "Release found on release board: $releaseKey"
+
+      - name: Update JIRA Release
+        if: steps.get_jira_release.outputs.RELEASE_KEY != ''
+        id: jira_release
+        run: |
+          curl --fail --request POST \
+          --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/issue/${{ steps.get_jira_release.outputs.RELEASE_KEY }}/transitions \
+          -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+          -H 'Accept: application/json' \
+          -H 'Content-Type: application/json' \
+          --data '{
+          "transition": {
+            "id": "11"
+          },
+          "fields": {
+            "customfield_12538": {"accountId":"${{ steps.approvers_account_ids.outputs.QA_APPROVER }}"},
+            "customfield_12541": {"value":"Yes"},
+            "customfield_12537": {"accountId":"${{ steps.approvers_account_ids.outputs.PRODUCT_APPROVER }}"},
+            "customfield_12540": {"value":"Yes"},
+            "customfield_12539": {"accountId":"${{ steps.approvers_account_ids.outputs.ENGINEERING_APPROVER }}"},
+            "customfield_12544": {"value":"Transactional Ledger"},
+            "customfield_12536": {"value":"No CHD / PII / GDPR impact"},
+            "description": {
+              "type": "doc",
+              "version": 1,
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Code Delta",
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "type": "text",
+                      "text": "https://github.com/${{ github.repository }}/compare/${{ needs.retrieve-tags.outputs.PREVIOUS_TAG }}..${{ needs.retrieve-tags.outputs.LATEST_TAG }}",
+                      "marks": [
+                        {
+                          "type": "link",
+                          "attrs": {
+                            "href": "https://github.com/${{ github.repository }}/compare/${{ needs.retrieve-tags.outputs.PREVIOUS_TAG }}..${{ needs.retrieve-tags.outputs.LATEST_TAG }}"
+                          }
+                        }
+                      ]
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "type": "text",
+                      "text": "https://github.com/${{ github.repository }}/releases/tag/${{ needs.retrieve-tags.outputs.LATEST_TAG }}",
+                      "marks": [
+                        {
+                          "type": "link",
+                          "attrs": {
+                            "href": "https://github.com/${{ github.repository }}/releases/tag/${{ needs.retrieve-tags.outputs.LATEST_TAG }}"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Functional Delta",
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "hardBreak"
+                    },
+                    {
+                      "type": "text",
+                      "text": "${{ inputs.JIRA_BASE_URL }}/projects/${{ inputs.PROJECT_KEY }}/versions/${{ steps.create_jira_version.outputs.VERSION_ID }}/tab/release-report-all-issues",
+                      "marks": [
+                        {
+                          "type": "link",
+                          "attrs": {
+                            "href": "${{ inputs.JIRA_BASE_URL }}/projects/${{ inputs.PROJECT_KEY }}/versions/${{ steps.create_jira_version.outputs.VERSION_ID }}/tab/release-report-all-issues"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+          }
+          }
+          }' -f
+          {% endraw %}

@@ -39,7 +39,10 @@ out/
 ### Localstack ###
 /docker/
 /src/main/schemas/proto/meta.proto
+/src/main/schemas/proto/cko.card_processing_settlement.proto
+/src/main/schemas/proto/cko.card_processing_settlement_data_controls.proto
 /src/main/schemas/proto/cko.proto
 
 
 .DS_Store
+

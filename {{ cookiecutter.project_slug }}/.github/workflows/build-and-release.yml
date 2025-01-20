@@ -1,0 +1,96 @@
+name: Build and Release
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - '**'
+
+concurrency:
+  group: "${% raw %}{{ github.workflow }} @ {{ github.event.pull_request.head.label || github.head_ref || github.ref }}{% endraw %}"
+  cancel-in-progress: true
+
+jobs:
+  setup:
+    runs-on: [ cko-fort-default-runners-github-runners ]
+    outputs:
+      version: {% raw %}${{ steps.get_env_and_version.outputs.VERSION }}{% endraw %}
+      env: {% raw %}${{ steps.get_env_and_version.outputs.ENVIRONMENT }}{% endraw %}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.0.0
+        with:
+          versionSpec: '6.0.0'
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@v3.0.0
+        id: get_version
+      - name: Determine env
+        id: get_env_and_version
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" == "push" ] && [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            echo "ENVIRONMENT=prod" >> $GITHUB_OUTPUT
+            echo "VERSION=${% raw %}{{ steps.get_version.outputs.MajorMinorPatch }}{% endraw %}" >> $GITHUB_OUTPUT
+          else
+            echo "ENVIRONMENT=qa" >> $GITHUB_OUTPUT
+            echo "VERSION=${% raw %}{{ steps.get_version.outputs.SemVer }}{% endraw %}" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-push-ecr:
+    needs: [ setup ]
+    runs-on: [ cko-fort-default-runners-github-runners ]
+    steps:
+      - name: Setting up variables for this job
+        id: config
+        run: |
+          echo "ECR=791259062566.dkr.ecr.eu-west-1.amazonaws.com/" >> $GITHUB_OUTPUT &&
+          echo "ECR_IMAGE_PATH=cko-fort/{{ cookiecutter.project_slug }}" >> $GITHUB_OUTPUT
+      - name: Checkout repository and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - id: codeartifact-token
+        name: Retrieve CodeArtifact token
+        uses: cko-fort/tl-git-actions/codeartifact-token@v1
+
+      - name: Build docker image
+        uses: cko-core-engineering/actions/docker-build@v3
+        with:
+          Dockerfile: "./Dockerfile"
+          PushImagesOnComplete: true
+          PackageVersion: {% raw %}${{ needs.setup.outputs.version }}{% endraw %}
+          Tags: {% raw %}${{steps.config.outputs.ECR}}${{ steps.config.outputs.ECR_IMAGE_PATH }}:${{ needs.setup.outputs.version }}{% endraw %}
+          ImagePath: {% raw %}${{ steps.config.outputs.ECR_IMAGE_PATH }}{% endraw %}
+          FailThreshold: high
+          BuildArgs: CODEARTIFACT_AUTH_TOKEN={% raw %}${{ steps.codeartifact-token.outputs.codeartifact_auth_token }}{% endraw %}
+  
+  create-jira-release:
+    needs: [ setup, build-and-push-ecr ]
+    if: needs.setup.outputs.env == 'prod'
+    name: Create JIRA Release
+    uses: ./.github/workflows/create-jira-release.yml
+    with:
+      VERSION: {% raw %}${{ needs.setup.outputs.version }}{% endraw %}
+      APPLICATION: {{ cookiecutter.project_slug }}
+      PROJECT_KEY: SETL
+    secrets:
+      JIRA_USER_EMAIL: {% raw %}${{ secrets.JIRA_USER_EMAIL }}{% endraw %}
+      JIRA_API_TOKEN: {% raw %}${{ secrets.JIRA_API_TOKEN }}{% endraw %}
+
+  release:
+    needs: [ setup, build-and-push-ecr ]
+    uses: ./.github/workflows/release.yml
+    with:
+      version: {% raw %}${{ needs.setup.outputs.version }}{% endraw %}
+      env: {% raw %}${{ needs.setup.outputs.env }}{% endraw %}
+    secrets:
+      SPACELIFT_API_KEY_ID: {% raw %}${{ secrets.SPACELIFT_API_KEY_ID }}{% endraw %}
+      SPACELIFT_API_KEY_SECRET: {% raw %}${{ secrets.SPACELIFT_API_KEY_SECRET }}{% endraw %}
+      JIRA_USER_EMAIL: {% raw %}${{ secrets.JIRA_USER_EMAIL }}{% endraw %}
+      JIRA_API_TOKEN: {% raw %}${{ secrets.JIRA_API_TOKEN }}{% endraw %}
+      SLACK_WEBHOOK_URL: {% raw %}${{ secrets.SLACK_WEBHOOK_URL }}{% endraw %}

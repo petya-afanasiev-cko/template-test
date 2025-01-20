@@ -1,6 +1,8 @@
 #!/bin/sh
 
-docker build -t {{ cookiecutter.scheme_slug }}-settlement .
+set -e
+
+docker build --build-arg CODEARTIFACT_AUTH_TOKEN=${CODEARTIFACT_AUTH_TOKEN} -t {{ cookiecutter.project_slug }} .
 
 docker compose pull
 

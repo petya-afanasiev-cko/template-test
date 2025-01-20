@@ -1,4 +1,4 @@
-name: {{ cookiecutter.scheme_slug }}-settlement
+name: {{ cookiecutter.project_slug }}
 services:
   localstack:
     container_name: localstack
@@ -17,7 +17,7 @@ services:
       - DEBUG=1
       - DATA_DIR=/tmp/localstack/data
     networks:
-      - {{ cookiecutter.scheme_slug }}-settlement-network
+      - {{ cookiecutter.project_slug }}-network
     volumes:
       - localstack_data:/var/lib/localstack
       - /var/run/docker.sock:/var/run/docker.sock
@@ -29,7 +29,7 @@ services:
 #      context: ./docker
 #      dockerfile: ./terraform/Dockerfile
 #    networks:
-#      - {{ cookiecutter.scheme_slug }}-settlement-network
+#      - {{ cookiecutter.project_slug }}-network
 #    depends_on:
 #      - localstack
 
@@ -37,7 +37,7 @@ services:
     container_name: kafka
     image: confluentinc/confluent-local:7.8.0
     networks:
-      - {{ cookiecutter.scheme_slug }}-settlement-network
+      - {{ cookiecutter.project_slug }}-network
     ports:
       - "9092:9092"
       - "9091:9091"
@@ -45,15 +45,15 @@ services:
       - "8082:8082"
     environment:
       CLUSTER_ID: "q1Sh-9_ISia_zwGINzRvyQ"
-      KAFKA_LISTENERS: "PLAINTEXT://localhost:29092,CONTROLLER://localhost:29093,PLAINTEXT_HOST://0.0.0.0:9092,PLAINTEXT_LOCAL://0.0.0.0:9091"
-      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:29092,PLAINTEXT_HOST://kafka:9092,PLAINTEXT_LOCAL://localhost:9091"
+      KAFKA_LISTENERS: "PLAINTEXT://localhost:29092,CONTROLLER://localhost:29093,PLAINTEXT_HOST://0.0.0.0:9091,PLAINTEXT_LOCAL://0.0.0.0:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://localhost:29092,PLAINTEXT_HOST://kafka:9091,PLAINTEXT_LOCAL://localhost:9092"
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT_LOCAL:PLAINTEXT"
       KAFKA_TOPIC_CREATION_ENABLE: "true"
     volumes:
       - ./docker/kafka:/scripts
     command: [ "/scripts/entrypoint.sh" ]
     healthcheck:
-      test: kafka-topics --bootstrap-server kafka:9092 --list
+      test: kafka-topics --bootstrap-server kafka:9091 --list
       start_period: 15s
       interval: 30s
       timeout: 10s
@@ -64,11 +64,11 @@ services:
     ports:
       - 8085:8085
     networks:
-      - {{ cookiecutter.scheme_slug }}-settlement-network
+      - {{ cookiecutter.project_slug }}-network
     depends_on:
       - kafka
     environment:
-      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9091
       SCHEMA_REGISTRY_KAFKASTORE_SECURITY_PROTOCOL: PLAINTEXT
       SCHEMA_REGISTRY_HOST_NAME: schema-registry
       SCHEMA_REGISTRY_LISTENERS: http://schema-registry:8085,http://localhost:8085
@@ -80,7 +80,7 @@ services:
     container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     networks:
-      - {{ cookiecutter.scheme_slug }}-settlement-network
+      - {{ cookiecutter.project_slug }}-network
     depends_on:
       - kafka
       - schema-registry
@@ -88,11 +88,11 @@ services:
       - "8090:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9091
       KAFKA_CLUSTERS_0_SCHEMAREGISTRY: http://schema-registry:8085
 networks:
-  {{ cookiecutter.scheme_slug }}-settlement-network:
-    name: {{ cookiecutter.scheme_slug }}-settlement-network
+  {{ cookiecutter.project_slug }}-network:
+    name: {{ cookiecutter.project_slug }}-network
 
 volumes:
   localstack_data: { }

@@ -13,10 +13,10 @@ services:
       - AWS_ACCESS_KEY_ID=xxx
       - AWS_SECRET_ACCESS_KEY=xxx
     networks:
-      - {{ cookiecutter.scheme_slug }}-settlement-network
+      - {{ cookiecutter.project_slug }}-network
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
-  {{ cookiecutter.scheme_slug }}-settlement-network:
-    name: {{ cookiecutter.scheme_slug }}-settlement-network
+  {{ cookiecutter.project_slug }}-network:
+    name: {{ cookiecutter.project_slug }}-network

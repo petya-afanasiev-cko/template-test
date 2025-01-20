@@ -1,0 +1,132 @@
+name: "Complete JIRA release flow"
+
+on:
+  workflow_call:
+    inputs:
+      VERSION:
+        description: Version number for the release.
+        type: string
+        required: true
+      APPLICATION:
+        description: Name of the application to be released.
+        type: string
+        required: true
+      PROJECT_KEY:
+        description: The project key as described on JIRA.
+        type: string
+        required: true
+      JIRA_BASE_URL:
+        description: URL of Jira instance.
+        type: string
+        required: false
+        default: https://checkout.atlassian.net
+    secrets:
+      JIRA_USER_EMAIL:
+        description: Email of the user for which Access Token was created for.
+        required: true
+      JIRA_API_TOKEN:
+        description: Access Token for Authorization.
+        required: true
+{% raw %}
+jobs:
+  retrieve-tags:
+    runs-on: [ self-hosted ]
+    outputs:
+      latest_tag: ${{ steps.get_latest_tag.outputs.LATEST_TAG }}
+      previous_tag: ${{ steps.get_previous_tag.outputs.PREVIOUS_TAG }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find Latest Tag
+        id: get_latest_tag
+        run: |
+          latest_tag=${{ inputs.version }}
+          if [ "$latest_tag" == "" ]; then
+            latest_tag=$(git describe --tags --abbrev=0 | grep -v '\-alpha' | tail -1)
+          fi
+          echo "LATEST_TAG=$latest_tag" >> $GITHUB_OUTPUT
+          echo "Latest tag found: $latest_tag"
+
+  complete-jira-release:
+    runs-on: [ self-hosted ]
+    needs: [ retrieve-tags ]
+    steps:
+      - name: Get current date
+        id: date
+        run: |
+          localdate=$(date +'%Y-%m-%d')
+          echo "LOCAL_DATE=$localdate" >> $GITHUB_OUTPUT
+          echo "Current date: $localdate"
+
+
+      - name: Get Jira Release
+        id: get_jira_release
+        run: |
+          releaseKey=$(curl --location --request POST ${{ inputs.JIRA_BASE_URL }}/rest/api/3/search \
+                                                  --header 'Accept: application/json' \
+                                                  --header 'Content-Type: application/json' \
+                                                  --user ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+                                                  --data-raw '{
+                                                    "jql": "project = RELEASE and  summary ~ ${{ inputs.APPLICATION }}-${{ needs.retrieve-tags.outputs.LATEST_TAG }}"
+                                                  }'| jq -r .issues[0].key)
+          echo "RELEASE_KEY=$releaseKey" >> $GITHUB_OUTPUT
+          echo "Release found: $releaseKey"
+
+      - name: Complete JIRA Release on Release Board
+        if: steps.get_jira_release.outputs.RELEASE_KEY != ''
+        id: complete_release_board
+        continue-on-error: true
+        run: |
+          curl --fail --request POST \
+          --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/issue/${{ steps.get_jira_release.outputs.RELEASE_KEY }}/transitions \
+          -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+          -H 'Accept: application/json' \
+          -H 'Content-Type: application/json' \
+          --data '{
+            "transition": {
+              "id": "21"
+            }
+          }' -f
+          
+          curl --fail --request POST \
+          --url ${{ inputs.JIRA_BASE_URL }}/rest/api/3/issue/${{ steps.get_jira_release.outputs.RELEASE_KEY }}/transitions \
+          -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+          -H 'Accept: application/json' \
+          -H 'Content-Type: application/json' \
+          --data '{
+            "transition": {
+              "id": "31"
+            }
+          }' -f
+      #id 21 is for "Ready for Release" transition
+      #id 31 is for "Release" transition
+
+      - name: Get JIRA Release on Project
+        id: get_project_release
+        run: |
+          releaseId=$(curl --request GET \
+          --url https://checkout.atlassian.net/rest/api/3/project/${{ inputs.PROJECT_KEY }}/versions \
+          -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+          -H 'Accept: application/json'  |jq -r '.[] | select(.name | contains("${{ inputs.APPLICATION }}-${{ needs.retrieve-tags.outputs.LATEST_TAG }}")) | .id'
+          )
+          echo "RELEASE_ID=$releaseId" >> $GITHUB_OUTPUT
+          echo "Project release found: $releaseId"
+
+
+      - name: Complete JIRA Release on Project
+        if: steps.get_project_release.outputs.RELEASE_ID != ''
+        id: complete_project_release
+        run: |
+          
+          curl --request PUT \
+          --url https://checkout.atlassian.net/rest/api/3/version/${{ steps.get_project_release.outputs.RELEASE_ID }} \
+          -u ${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }} \
+          -H 'Accept: application/json' \
+          -H 'Content-Type: application/json' \
+          --data '{
+          "released": true,
+          "releaseDate": "${{ steps.date.outputs.LOCAL_DATE }}"
+          }' -f
+  {% endraw %}

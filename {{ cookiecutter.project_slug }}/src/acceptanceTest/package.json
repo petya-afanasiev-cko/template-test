@@ -1,9 +1,9 @@
 {
-  "name": "{{ cookiecutter.scheme_slug }}-settlement",
-  "description": "Acceptance tests for the {{ cookiecutter.scheme_slug }} Settlement",
+  "name": "{{ cookiecutter.project_slug }}",
+  "description": "Acceptance tests for the {{ cookiecutter.project_name }}",
   "version": "2.0.0",
   "author": "Scheme Ingestion <gateway-team@checkout.com>",
-  "repository": "https://github.com/cko-fort/{{ cookiecutter.scheme_slug }}-settlement",
+  "repository": "https://github.com/cko-fort/{{ cookiecutter.project_slug }}",
   "private": true,
   "scripts": {
     "test": "mocha"

@@ -1,24 +1,21 @@
-HELP.md
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+src/test/proto/
+/docker/
 
 ### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+.idea/aws.xml
+.idea/.name
+.idea/gradle.xml
 .idea
+python/.idea
 *.iws
 *.iml
 *.ipr
@@ -26,20 +23,11 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
 ### VS Code ###
 .vscode/
 
-### Localstack ###
-/docker/
-/src/main/schemas/proto/meta.proto
-/src/main/schemas/proto/cko.proto
-
-
+### Mac OS ###
 .DS_Store
+
+### Makefile ###
+src.**

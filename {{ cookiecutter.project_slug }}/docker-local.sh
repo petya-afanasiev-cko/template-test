@@ -1,6 +1,6 @@
 #!/bin/sh
 
-docker build -t {{ cookiecutter.scheme_slug }}-settlement .
+docker build -t {{ cookiecutter.project_slug }} .
 
 docker compose pull
 

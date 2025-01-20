@@ -1,0 +1,17 @@
+name: SonarQube Scan with Coverage Upload
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  SonarQube:
+    runs-on: [ self-hosted, cko-fort-default-runners-github-runners ]
+    steps:
+      - uses: cko-fort/tl-git-actions/sonar@v2
+        with:
+          JavaVersion: '21'
+          GithubToken: ${{ secrets.GITHUB_TOKEN }}
+          SonarToken: ${{ secrets.SONAR_TOKEN }}
+          SonarHostUrl: ${{ secrets.SONAR_HOST_URL }}

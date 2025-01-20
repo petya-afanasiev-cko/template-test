@@ -1,0 +1,6 @@
+spring:
+  kafka:
+    producer:
+      properties:
+        bootstrap.servers: 'b-1.agora-msk-qa.1cto8g.c4.kafka.eu-west-1.amazonaws.com:9098,b-3.agora-msk-qa.1cto8g.c4.kafka.eu-west-1.amazonaws.com:9098,b-2.agora-msk-qa.1cto8g.c4.kafka.eu-west-1.amazonaws.com:9098'
+        schema.registry.url: 'https://schemas.cko-qa.ckotech.co/'

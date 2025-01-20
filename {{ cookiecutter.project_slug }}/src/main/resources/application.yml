@@ -1,15 +1,38 @@
+aws:
+  region: eu-west-1
 spring:
   application:
-    name: {{ cookiecutter.scheme_slug }}-settlement
+    name: {{ cookiecutter.project_slug }}
   profiles: ##profiles gets overwritten by ECS IAC.
     active: localdev
   batch:
     job:
       enabled: false
+  kafka:
+    producer:
+      acks: all
+      retries: 5
+      properties:
+        retry.backoff.ms: 250
+        schema.registry.url:
+        schema.registry.ssl.keystore.location:
+        schema.registry.ssl.keystore.password:
+        schema.registry.ssl.key.password:
+        schema.registry.ssl.keystore.type:
+        schema.registry.ssl.truststore.location:
+        schema.registry.ssl.truststore.password:
+        value.subject.name.strategy: io.confluent.kafka.serializers.subject.RecordNameStrategy
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.protobuf.KafkaProtobufSerializer
   threads:
     virtual:
       enabled: true
 
+kafka:
+  settlement-topic: cko.card_processing_settlement.SettlementEvent
+  raw-settlement-topic: cko.card_processing_settlement_data_controls.RawSettlementRecord
+  settlement-totals-topic: cko.card_processing_settlement_data_controls.SettlementTotalsEventPublic
+    
 logging:
   log4j2:
     isThreadContextMapInheritable: true

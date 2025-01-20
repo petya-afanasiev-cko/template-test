@@ -1,22 +1,20 @@
 package com.checkout.settlement.{{ cookiecutter.scheme_slug }}.confirmation;
 
+import static com.checkout.settlement.loader.utils.StringParser.optionalString;
+import static com.checkout.settlement.loader.utils.StringParser.parseIsoDateTime;
+import static com.checkout.settlement.loader.utils.StringParser.parseOptionalIsoDate;
+
 import com.checkout.settlement.{{ cookiecutter.scheme_slug }}.confirmation.model.Charge;
 import com.checkout.settlement.{{ cookiecutter.scheme_slug }}.confirmation.model.ConfirmationRecord;
 import com.checkout.settlement.{{ cookiecutter.scheme_slug }}.confirmation.model.Header;
-import com.checkout.settlement.{{ cookiecutter.scheme_slug }}.infrastructure.reader.FileLineRecord;
-import com.checkout.settlement.{{ cookiecutter.scheme_slug }}.infrastructure.reader.UnknownRecord;
+import com.checkout.settlement.loader.reader.FileLineRecord;
+import com.checkout.settlement.loader.reader.UnknownRecord;
+import java.time.ZoneOffset;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.file.LineMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.time.ZoneOffset;
-
-import static com.checkout.settlement.{{ cookiecutter.scheme_slug }}.utils.StringParser.optionalString;
-import static com.checkout.settlement.{{ cookiecutter.scheme_slug }}.utils.StringParser.parseBigDecimal;
-import static com.checkout.settlement.{{ cookiecutter.scheme_slug }}.utils.StringParser.parseIsoDate;
-import static com.checkout.settlement.{{ cookiecutter.scheme_slug }}.utils.StringParser.parseIsoDateTime;
-import static com.checkout.settlement.{{ cookiecutter.scheme_slug }}.utils.StringParser.parseOptionalIsoDate;
 
 @StepScope
 @Component
@@ -34,7 +32,7 @@ public class ConfirmationLineMapper implements LineMapper<FileLineRecord> {
     return switch (recordType) {
       case HEADER -> mapHeader(lineNumber, line);
       case CHARGE -> mapCharge(lineNumber, line);
-      default -> new UnknownRecord(fileName, lineNumber);
+      default -> new UnknownRecord(fileName, lineNumber, line);
     };
   }
 
@@ -42,6 +40,7 @@ public class ConfirmationLineMapper implements LineMapper<FileLineRecord> {
     return new Header(
         fileName,
         lineNumber,
+        line,
         line.substring(0, 2),
         line.substring(2, 5).strip(),
         line.substring(5, 16),
@@ -58,6 +57,7 @@ public class ConfirmationLineMapper implements LineMapper<FileLineRecord> {
     return new Charge(
         fileName,
         lineNumber,
+        line,
         line.substring(0, 2),
         line.substring(2, 5),
         "",
@@ -67,34 +67,34 @@ public class ConfirmationLineMapper implements LineMapper<FileLineRecord> {
         line.substring(37, 45),
         line.substring(45, 51),
         line.substring(51, 57),
-        parseBigDecimal(line.substring(57, 63)),
-        parseBigDecimal(line.substring(63, 79)),
-        parseBigDecimal(line.substring(79, 99)),
-        parseBigDecimal(line.substring(99, 119)),
-        parseBigDecimal(line.substring(119, 139)),
-        parseBigDecimal(line.substring(139, 159)),
-        parseBigDecimal(line.substring(159, 179)),
-        parseBigDecimal(line.substring(179, 199)),
-        parseBigDecimal(line.substring(199, 219)),
-        parseBigDecimal(line.substring(219, 239)),
-        parseBigDecimal(line.substring(239, 259)),
-        parseBigDecimal(line.substring(259, 279)),
-        parseBigDecimal(line.substring(279, 299)),
-        parseBigDecimal(line.substring(299, 319)),
+        line.substring(57, 63),
+        line.substring(63, 79),
+        line.substring(79, 99),
+        line.substring(99, 119),
+        line.substring(119, 139),
+        line.substring(139, 159),
+        line.substring(159, 179),
+        line.substring(179, 199),
+        line.substring(199, 219),
+        line.substring(219, 239),
+        line.substring(239, 259),
+        line.substring(259, 279),
+        line.substring(279, 299),
+        line.substring(299, 319),
         line.substring(319, 355),
         line.substring(355, 361),
         line.substring(361, 397),
-        parseIsoDate(line.substring(397, 405)).atStartOfDay().toInstant(ZoneOffset.UTC),
+        line.substring(397, 405),
         line.substring(405, 406),
         line.substring(406, 410),
         line.substring(410, 425),
-        parseBigDecimal(line.substring(425, 445)),
-        parseBigDecimal(line.substring(445, 465)),
-        parseBigDecimal(line.substring(465, 485)),
-        parseBigDecimal(line.substring(485, 505)),
-        parseBigDecimal(line.substring(505, 525)),
-        parseBigDecimal(line.substring(525, 545)),
-        parseBigDecimal(line.substring(545, 555)),
+        line.substring(425, 445),
+        line.substring(445, 465),
+        line.substring(465, 485),
+        line.substring(485, 505),
+        line.substring(505, 525),
+        line.substring(525, 545),
+        line.substring(545, 555),
         line.substring(555, 558),
         line.substring(558, 559),
         line.substring(559, 563),

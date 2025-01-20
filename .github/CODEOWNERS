@@ -1,0 +1,5 @@
+# The Settlement Data Pipeline Team is the default owner for everything in
+# the repo. Unless a later match takes precedence,
+# all members of that team will be requested for
+# review when someone opens a pull request.
+* @cko-fort/settlement-data-pipeline

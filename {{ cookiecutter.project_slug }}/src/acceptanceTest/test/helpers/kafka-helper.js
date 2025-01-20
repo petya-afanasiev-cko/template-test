@@ -1,5 +1,5 @@
 const { Kafka } = require('kafkajs');
-const { SchemaRegistry } = require('@kafkajs/confluent-schema-registry')
+const { SchemaRegistry, SchemaType } = require('@kafkajs/confluent-schema-registry')
 
 module.exports = {
   startConsumer,
@@ -32,11 +32,10 @@ async function startConsumer() {
   }});
 }
 
-async function getEvents(processingSleep = 3000) {
+async function getEvents() {
   if (!messages) {
     throw new Error("Call 'startConsumer' before requesting events");
   }
-  await new Promise(resolve => setTimeout(resolve, processingSleep));
   await consumer.disconnect();
   return messages;
 }

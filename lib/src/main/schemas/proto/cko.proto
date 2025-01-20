@@ -1,0 +1,52 @@
+syntax = "proto3";
+package cko;
+
+import "google/protobuf/descriptor.proto";
+import "meta.proto";
+
+option cc_generic_services = false;
+option java_outer_classname = "Extensions";
+
+message Money {
+  string currency_code = 1;
+  int64 units = 2;
+  int32 nanos = 3;
+}
+message Decimal {
+  string value = 1;
+}
+message Date {
+  int32 year = 1;
+  int32 month = 2;
+  int32 day = 3;
+}
+
+extend .google.protobuf.FieldOptions {
+  repeated string map = 51002;
+  string filter = 51003;
+  string each = 51004;
+  string merge = 51005;
+  bool pii = 52002;
+  string doc = 52003;
+  bool pci = 52004 [(meta.fld.type) = TAG];
+  bool pk = 52005 [deprecated = true];
+  bool primary_key = 52006;
+  bool partition = 52007;
+  bool partition_by_day = 52008;
+  bool partition_by_hour = 52009;
+  bool partition_by_month = 52010;
+  bool partition_by_year = 52011;
+  int32 partition_by_bucket = 52012;
+  bool cluster_by = 52013;
+  string validate = 52014;
+  string merge_key = 52015;
+}
+extend .google.protobuf.MessageOptions {
+  string docs = 53002;
+  string classification = 53003 [
+    (meta.fld.type) = TERM,
+    (meta.fld.type) = PROPERTY
+  ];
+  string owner = 53004 [(meta.fld.type) = PROPERTY];
+  repeated string skip = 53005;
+}

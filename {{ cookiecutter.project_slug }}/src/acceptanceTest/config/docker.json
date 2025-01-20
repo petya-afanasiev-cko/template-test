@@ -2,8 +2,9 @@
   "awsUrl": "http://localstack:4566/",
   "s3Bucket": "scheme-settlements-default",
   "s3BucketDir": "{{ cookiecutter.scheme_slug }}/incoming/",
-  "kafkaBrokerUrl": "kafka:9092",
-  "schemaRegistryUrl": "http://schema-registry:8085",
-  "kafkaTopic": "settlement-events",
-  "confirmationFile": "./files/Confirmation_ACQ.fwf"
+  "kafkaBrokerUrl": "kafka:9091",
+  "schemaRegistryUrl": "http://schema-registry:8085/",
+  "kafkaTopic": "cko.card_processing_settlement.SettlementEvent",
+  "confirmationFile": "./files/Confirmation_ACQ.fwf",
+  "tc33File": "./files/VISA_TC33_INTL_GB_ANONYMISED_CAS.TXT"
 }

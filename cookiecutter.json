@@ -1,6 +1,9 @@
 {
   "scheme": "Visa",
-  "scheme_slug": "{{ cookiecutter.scheme.lower() }}",
+  "__scheme_no_space": "{{ cookiecutter.scheme.replace(' ', '') }}",
+  "scheme_slug": "{{ cookiecutter.scheme.lower().replace(' ', '') }}",
   "project_name": "SDP {{ cookiecutter.scheme }} Loader",
-  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}"
+  "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
+  "project_snake": "{{ cookiecutter.project_name.lower().replace(' ', '_') }}",
+  "file_type": "tc33"
 }

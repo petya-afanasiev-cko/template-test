@@ -7,6 +7,7 @@ import java.util.Optional;
 public record Header(
     String fileName,
     int lineNumber,
+    String lineContents,
     String recordType,
     String acquiringInstitutionIdentificationCode,
     String acquiringIsoInstitutionIdentificationCode,

@@ -19,9 +19,10 @@ feature("Confirmation file @presentment-settled", function () {
       .when("file is uploaded to S3 and processed", async () => {
         await s3Helper.uploadFile(context.incomingFile);
         context.events = await kafkaHelper.getEvents();
+        // todo verify settlement and raw events
       })
       .then("'PresentmentSettled' Capture is valid", async () => {
-        console.log("TODO")
+        console.log(context.events)
       })
   ).build();
 
