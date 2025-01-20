@@ -5,5 +5,5 @@
   "project_name": "SDP {{ cookiecutter.scheme }} Loader",
   "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '-') }}",
   "project_snake": "{{ cookiecutter.project_name.lower().replace(' ', '_') }}",
-  "file_type": "tc33"
+  "first_file_type": "tc33"
 }
